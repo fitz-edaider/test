@@ -29,7 +29,7 @@
     #choices {
       margin: 20px 0;
     }
-    .choice-button, .lang-button, #nextButton, #restartButton {
+    .choice-button, .lang-button, #nextButton, #restartButton, #startButton, .more-info-btn {
       display: block;
       width: 100%;
       margin: 10px 0;
@@ -39,11 +39,11 @@
       border-radius: 4px;
       cursor: pointer;
     }
-    .choice-button {
+    .choice-button, #startButton {
       background-color: #007BFF;
       color: white;
     }
-    .choice-button:hover {
+    .choice-button:hover, #startButton:hover {
       background-color: #0056b3;
     }
     .lang-button {
@@ -60,6 +60,19 @@
     #nextButton:hover, #restartButton:hover {
       background-color: #1e7e34;
     }
+    /* Make the More Info button smaller */
+    .more-info-btn {
+      background-color: #ffc107;
+      color: #333;
+      font-size: 0.8rem;
+      padding: 5px 8px;
+      width: auto;
+      display: inline-block;
+      margin-top: 10px;
+    }
+    .more-info-btn:hover {
+      background-color: #e0a800;
+    }
     .outcome {
       background-color: #e9ecef;
       padding: 10px;
@@ -67,20 +80,38 @@
       margin-top: 10px;
       border-left: 4px solid #007BFF;
     }
-    #startButton {
-  display: block;
-  width: 100%;
-  margin: 10px 0;
-  padding: 10px;
-  font-size: 1rem;
-  border: none;
-  border-radius: 4px;
-  background-color: #007BFF;
-  color: white;
-  cursor: pointer;
-}
-#startButton:hover {
-  background-color: #0056b3;
+    /* Modal Styles */
+    #modal {
+      display: none;
+      position: fixed;
+      z-index: 100;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0, 0, 0, 0.5);
+    }
+    #modal-content {
+      background-color: #fefefe;
+      margin: 15% auto;
+      padding: 20px;
+      border: 1px solid #888;
+      width: 80%;
+      max-width: 600px;
+      border-radius: 8px;
+    }
+    .close {
+      color: #aaa;
+      float: right;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .close:hover,
+    .close:focus {
+      color: black;
+      text-decoration: none;
     }
   </style>
 </head>
@@ -103,6 +134,14 @@
     <button id="restartButton" style="display:none;" onclick="startGame()"></button>
   </div>
 
+  <!-- Modal Popup -->
+  <div id="modal">
+    <div id="modal-content">
+      <span class="close" onclick="closeModal()">&times;</span>
+      <div id="modal-body"></div>
+    </div>
+  </div>
+
   <script>
     // Global variables
     let currentLanguage = "en"; // "en" or "sv"
@@ -120,7 +159,7 @@
       return newArray;
     }
 
-    // Data: Scenarios with exactly 3 answer options per scenario.
+    // Data: Updated scenarios array with 6 scenarios.
     const scenarios = [
       {
         en: {
@@ -209,6 +248,52 @@
             { 
               text: "Ignorera skillnaden", 
               outcome: "Att förbise problemet riskerar att upprätthålla ojämlikhet och kan minska elevernas förtroende för ny teknik.",
+              correct: false 
+            }
+          ]
+        }
+      },
+      {
+        en: {
+          title: "The Dependency Trap",
+          description: "Emma, a diligent student, starts relying heavily on StudyMate for every assignment. Over time, she stops engaging critically with her work, and her creative and analytical skills begin to decline.",
+          question: "What is your response to help Emma regain her independence?",
+          choices: [
+            { 
+              text: "Encourage her to solve problems independently and provide alternative learning resources", 
+              outcome: "Promoting critical thinking and offering varied resources supports her development and ensures she remains actively engaged in learning.",
+              correct: true 
+            },
+            { 
+              text: "Allow her to continue using StudyMate without intervention", 
+              outcome: "Without guidance, Emma risks becoming overly dependent on technology, which may hamper her long-term intellectual growth.",
+              correct: false 
+            },
+            { 
+              text: "Punish her for relying on the chatbot", 
+              outcome: "Punishment does little to address the dependency issue and may damage her motivation to learn independently.",
+              correct: false 
+            }
+          ]
+        },
+        sv: {
+          title: "Beroendefällan",
+          description: "Emma, en flitig elev, börjar lita tungt på StudyMate för varje uppgift. Med tiden slutar hon tänka kritiskt på sitt arbete, och hennes kreativa och analytiska förmågor börjar minska.",
+          question: "Vad är ditt svar för att hjälpa Emma återfå sin självständighet?",
+          choices: [
+            { 
+              text: "Uppmuntra henne att lösa problem självständigt och erbjuda alternativa lärresurser", 
+              outcome: "Att främja kritiskt tänkande och erbjuda varierade resurser stödjer hennes utveckling och säkerställer att hon förblir aktivt engagerad i lärandet.",
+              correct: true 
+            },
+            { 
+              text: "Låt henne fortsätta använda StudyMate utan ingripande", 
+              outcome: "Utan vägledning riskerar Emma att bli alltför beroende av teknologin, vilket kan hämma hennes långsiktiga utveckling.",
+              correct: false 
+            },
+            { 
+              text: "Straffa henne för att lita på chatboten", 
+              outcome: "Straff bidrar inte till att lösa beroendeproblemet och kan skada hennes motivation att lära sig självständigt.",
               correct: false 
             }
           ]
@@ -497,7 +582,6 @@
         const feedbackDiv = document.createElement("div");
         feedbackDiv.id = "feedbackMessage";
         feedbackDiv.className = "outcome";
-        // Provide feedback text for an incorrect answer.
         feedbackDiv.textContent = (currentLanguage === "en") ? 
           "Incorrect: " + choice.outcome + " Please try again." : 
           "Felaktigt: " + choice.outcome + " Försök igen.";
@@ -510,8 +594,93 @@
         outcomeDiv.className = "outcome";
         outcomeDiv.textContent = choice.outcome;
         choicesDiv.appendChild(outcomeDiv);
+
+        // Add a "More Info" button after a correct answer.
+        const moreInfoBtn = document.createElement("button");
+        moreInfoBtn.className = "more-info-btn";
+        moreInfoBtn.textContent = (currentLanguage === "en") ? "More Info" : "Mer info";
+        moreInfoBtn.onclick = () => openModal(getMoreInfo());
+        choicesDiv.appendChild(moreInfoBtn);
+
         nextButton.style.display = "block";
       }
+    }
+
+    // getMoreInfo returns extended information based on the scenario index.
+    function getMoreInfo() {
+      let info = "";
+      if (currentLanguage === "en") {
+        switch (scenarioIndex) {
+          case 0:
+            info = `<h3>The Inaccurate Explanation – Accuracy & Accountability</h3>
+                    <p>In this scenario, the AI provided an incorrect explanation, leading to student confusion and a loss of trust. This highlights the UNESCO principle of <strong>Do No Harm</strong> — technology should support learning without introducing misinformation or emotional distress. Additionally, the principle of <strong>Proportionality</strong> reminds us that AI should offer clear benefits when used, with safeguards to catch errors before they impact students. Reflect on implementing systems such as peer review or teacher oversight to verify AI outputs.</p>`;
+            break;
+          case 1:
+            info = `<h3>The Unequal Helper – Equity & Accessibility</h3>
+                    <p>This scenario shows that AI may offer clear guidance for some students while leaving others behind due to complex language or design choices. This underscores UNESCO’s <strong>Non-Discrimination</strong> principle, urging us to adapt technology for diverse learning needs. <strong>Transparency and Explainability</strong> also play a key role, ensuring that both educators and students understand the limitations of AI. Consider methods to adjust or supplement AI responses to guarantee equitable support for all learners.</p>`;
+            break;
+          case 2:
+            info = `<h3>The Dependency Trap – Critical Thinking & Independence</h3>
+                    <p>This scenario illustrates how overreliance on AI can hinder the development of critical thinking and independent problem-solving skills. UNESCO’s <strong>Human Determination</strong> principle reminds educators to remain actively involved in guiding students, ensuring that technology supports rather than replaces independent inquiry. Reflect on ways to balance AI support with activities that foster independent thought and creativity.</p>`;
+            break;
+          case 3:
+            info = `<h3>AI in Schools – Privacy & Safety</h3>
+                    <p>This scenario presents the challenge of balancing AI monitoring for student safety with the need to protect privacy. The principles of <strong>Do No Harm</strong> and <strong>Proportionality</strong> are essential: while timely intervention can be lifesaving, it must not compromise personal privacy. <strong>Transparency and Explainability</strong> require that all stakeholders understand how data is collected and used. Reflect on strategies that integrate human oversight and clear ethical policies.</p>`;
+            break;
+          case 4:
+            info = `<h3>When Technology Misses the Mark – Misinformation and Oversight</h3>
+                    <p>This scenario reveals the risk of using AI for sensitive topics without adequate review. The UNESCO principles of <strong>Do No Harm</strong> and <strong>Human Determination</strong> emphasize that educators must rigorously vet AI-generated content. <strong>Transparency and Explainability</strong> ensure that limitations are understood, prompting robust review processes to safeguard educational integrity.</p>`;
+            break;
+          case 5:
+            info = `<h3>Empowering Environmental Problem-Solvers – Environmental Innovation & AI Impact</h3>
+                    <p>This scenario demonstrates how AI can empower students to tackle environmental challenges while also prompting reflection on its ecological footprint. UNESCO’s <strong>Sustainability</strong> principle calls on educators to consider the long-term environmental and social impacts of AI. Alongside <strong>Do No Harm</strong> and <strong>Proportionality</strong>, this perspective encourages a balanced approach. Reflect on integrating project-based learning and community partnerships that explore both the benefits and costs of AI.</p>`;
+            break;
+          default:
+            info = `<p>No additional information available.</p>`;
+        }
+      } else { // Swedish text
+        switch (scenarioIndex) {
+          case 0:
+            info = `<h3>Den felaktiga förklaringen – Noggrannhet och Ansvar</h3>
+                    <p>I detta scenario gav AI en felaktig förklaring, vilket ledde till förvirring bland eleverna och minskat förtroende. Detta belyser UNESCO-principen <strong>Skada inte</strong> – teknologin bör stödja lärande utan att introducera felaktig information eller känslomässig stress. Principen <strong>Proportionalitet</strong> påminner oss om att AI ska ge tydliga fördelar när den används, med skyddsåtgärder för att fånga upp fel innan de påverkar eleverna. Reflektera över att införa system som kamratgranskning eller läraröversyn för att verifiera AI-resultat.</p>`;
+            break;
+          case 1:
+            info = `<h3>Den ojämlika hjälpen – Jämlikhet och Tillgänglighet</h3>
+                    <p>Detta scenario visar att AI kan ge tydliga instruktioner för vissa elever, medan andra hamnar på efterkälken på grund av komplex språk eller designval. Detta understryker UNESCOs princip om <strong>Icke-diskriminering</strong>, som uppmanar oss att anpassa teknologin för att möta olika lärbehov. <strong>Transparens och förklarbarhet</strong> är avgörande för att både lärare och elever ska förstå AI:s begränsningar. Överväg metoder för att justera eller komplettera AI-svaren för att garantera jämlikt stöd.</p>`;
+            break;
+          case 2:
+            info = `<h3>Beroendefällan – Kritisk Tänkande och Självständighet</h3>
+                    <p>Detta scenario illustrerar hur ett överdrivet beroende av AI kan hämma utvecklingen av kritiskt tänkande och självständig problemlösning. UNESCOs princip om <strong>Mänsklig kontroll</strong> påminner lärare om att aktivt vägleda eleverna, så att teknologin stödjer snarare än ersätter självständigt lärande. Reflektera över sätt att balansera AI-stöd med aktiviteter som främjar oberoende tanke och kreativitet.</p>`;
+            break;
+          case 3:
+            info = `<h3>AI i skolor – Integritet och Säkerhet</h3>
+                    <p>Detta scenario belyser utmaningen att balansera fördelarna med AI-övervakning för elevsäkerhet med behovet av att skydda privatlivet. Principerna <strong>Skada inte</strong> och <strong>Proportionalitet</strong> är centrala: snabba AI-ingripanden kan rädda liv men får inte ske på bekostnad av integritet. <strong>Transparens och förklarbarhet</strong> kräver att alla förstår hur data samlas in och används. Reflektera över strategier med mänsklig översyn och tydliga etiska riktlinjer.</p>`;
+            break;
+          case 4:
+            info = `<h3>När teknologin misslyckas – Felinformation och Översyn</h3>
+                    <p>Detta scenario visar risken med att använda AI för känsliga ämnen utan noggrann översyn, där felaktig information kan urholka förtroendet. UNESCOs principer <strong>Skada inte</strong> och <strong>Mänsklig kontroll</strong> understryker vikten av noggrann granskning. <strong>Transparens och förklarbarhet</strong> säkerställer att AI:s begränsningar är kända, vilket understryker behovet av robusta granskningsprocesser.</p>`;
+            break;
+          case 5:
+            info = `<h3>Att stärka miljöinnovatörer – Miljöinnovation och AI:s påverkan</h3>
+                    <p>Detta scenario visar hur AI kan ge elever möjlighet att ta itu med verkliga miljöutmaningar, samtidigt som det väcker frågor om teknologiens ekologiska fotavtryck. UNESCOs princip om <strong>Hållbarhet</strong> uppmanar lärare att överväga de långsiktiga miljömässiga och sociala konsekvenserna av AI. Tillsammans med principerna <strong>Skada inte</strong> och <strong>Proportionalitet</strong> uppmuntras en balanserad användning. Reflektera över hur projektbaserat lärande och samarbete med lokala aktörer kan hjälpa eleverna att förstå både fördelarna och kostnaderna med AI.</p>`;
+            break;
+          default:
+            info = `<p>Ingen ytterligare information finns tillgänglig.</p>`;
+        }
+      }
+      return info;
+    }
+
+    // Modal functions
+    function openModal(content) {
+      const modal = document.getElementById("modal");
+      const modalBody = document.getElementById("modal-body");
+      modalBody.innerHTML = content;
+      modal.style.display = "block";
+    }
+    function closeModal() {
+      const modal = document.getElementById("modal");
+      modal.style.display = "none";
     }
 
     // Next button: progress through scenarios and then final pages.
