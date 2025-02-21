@@ -520,8 +520,8 @@
       currentLanguage = lang;
       languageSelection.style.display = "none";
       startButton.style.display = "block";
-      startButton.textContent = (lang === "en") ? "Start Game" : "Starta spelet";
-      restartButton.textContent = (lang === "en") ? "Restart Game" : "Starta om spelet";
+      startButton.textContent = (lang === "en") ? "Start Activity" : "Starta aktivitet";game
+      restartButton.textContent = (lang === "en") ? "Restart Activity" : "Starta om aktivitet";
       nextButton.textContent = (lang === "en") ? "Next" : "Nästa";
     }
 
@@ -538,7 +538,7 @@
       inFinalPages = false;
       clearDisplay();
       const introText = (currentLanguage === "en") ?
-        `<p>Welcome, Teacher! In this interactive roleplaying game, you will navigate scenarios that arise from integrating AI tools into education. Reflect on ethical challenges such as accuracy, equity, dependency, privacy, and sustainability as you choose your responses.</p>
+        `<p>Welcome, Teacher! In this interactive roleplaying activity, you will navigate scenarios that arise from integrating AI tools into education. Reflect on ethical challenges such as accuracy, equity, dependency, privacy, and sustainability as you choose your responses.</p>
          <p>Click "Next" to begin.</p>` :
         `<p>Välkommen, lärare! I detta interaktiva rollspel kommer du att möta scenarier som uppstår vid användning av AI-verktyg i utbildningen. Reflektera över etiska utmaningar som noggrannhet, jämlikhet, beroende, integritet och hållbarhet när du väljer dina svar.</p>
          <p>Klicka på "Nästa" för att börja.</p>`;
